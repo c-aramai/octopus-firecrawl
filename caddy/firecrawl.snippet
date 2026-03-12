@@ -1,0 +1,10 @@
+# Firecrawl reverse proxy — add to Caddyfile or import as snippet.
+# Proxies to the Firecrawl API on localhost:3002.
+
+http://firecrawl.axon.aramai.local {
+	reverse_proxy localhost:3002 {
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		header_up Host {host}
+	}
+}

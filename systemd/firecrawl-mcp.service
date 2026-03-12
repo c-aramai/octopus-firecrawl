@@ -1,0 +1,18 @@
+[Unit]
+Description=Firecrawl MCP Server (HTTP Streamable)
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+Environment=FIRECRAWL_API_URL=http://localhost:3002
+Environment=HTTP_STREAMABLE_SERVER=true
+Environment=PORT=3010
+ExecStart=/usr/bin/firecrawl-mcp
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

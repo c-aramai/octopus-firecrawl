@@ -1,0 +1,37 @@
+[
+  {
+    "name": "FHIR Patient Resource",
+    "domain": "healthcare",
+    "url": "https://hl7.org/fhir/patient.html",
+    "mode": "scrape",
+    "extractPrompt": "Extract the FHIR Patient resource definition including all elements, data types, cardinality constraints, and required bindings. Return as a structured JSON Schema."
+  },
+  {
+    "name": "FHIR Observation Resource",
+    "domain": "healthcare",
+    "url": "https://hl7.org/fhir/observation.html",
+    "mode": "scrape",
+    "extractPrompt": "Extract the FHIR Observation resource definition including all elements, data types, cardinality constraints, and required bindings. Return as a structured JSON Schema."
+  },
+  {
+    "name": "Stripe API - Payment Intents",
+    "domain": "ecommerce",
+    "url": "https://docs.stripe.com/api/payment_intents",
+    "mode": "scrape",
+    "extractPrompt": "Extract the PaymentIntent API object schema including all fields, types, enum values, and nested objects. Return as JSON Schema."
+  },
+  {
+    "name": "OpenBanking Account Info",
+    "domain": "finance",
+    "url": "https://openbankinguk.github.io/read-write-api-site3/v4.0/resources-and-data-models/aisp/account-access-consents.html",
+    "mode": "scrape",
+    "extractPrompt": "Extract the Account Access Consent data model including all fields, types, permissions, and constraints. Return as JSON Schema."
+  },
+  {
+    "name": "W3C JSON-LD Context",
+    "domain": "standards",
+    "url": "https://www.w3.org/ns/json-ld",
+    "mode": "scrape",
+    "extractPrompt": "Extract the JSON-LD context definition including all terms, type mappings, and namespace declarations."
+  }
+]

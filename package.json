@@ -1,0 +1,24 @@
+{
+  "name": "@octopus/firecrawl",
+  "version": "0.1.0",
+  "description": "Firecrawl integration for the OCTOPUS ecosystem — schema collection, patent research, competitor intelligence",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["firecrawl", "octopus", "mcp", "schema", "scraping"],
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

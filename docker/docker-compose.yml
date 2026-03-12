@@ -1,0 +1,152 @@
+name: firecrawl
+
+x-common-env: &common-env
+  REDIS_URL: redis://firecrawl-redis:6379
+  REDIS_RATE_LIMIT_URL: redis://firecrawl-redis:6379
+  PLAYWRIGHT_MICROSERVICE_URL: http://firecrawl-playwright:3000/scrape
+  USE_DB_AUTHENTICATION: "false"
+  NUM_WORKERS_PER_QUEUE: "2"
+  CRAWL_CONCURRENT_REQUESTS: "4"
+  MAX_CONCURRENT_JOBS: "3"
+  BROWSER_POOL_SIZE: "2"
+  OLLAMA_BASE_URL: http://octopus-ollama:11434
+  LOGGING_LEVEL: INFO
+  BLOCK_MEDIA: "true"
+
+services:
+  firecrawl-api:
+    image: ghcr.io/firecrawl/firecrawl:latest
+    container_name: firecrawl-api
+    environment:
+      <<: *common-env
+      HOST: "0.0.0.0"
+      PORT: "3002"
+      NUQ_RABBITMQ_URL: amqp://firecrawl-rabbitmq:5672
+      ENV: local
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST: firecrawl-postgres
+      POSTGRES_PORT: "5432"
+    depends_on:
+      firecrawl-redis:
+        condition: service_started
+      firecrawl-playwright:
+        condition: service_started
+      firecrawl-rabbitmq:
+        condition: service_healthy
+      firecrawl-postgres:
+        condition: service_started
+    ports:
+      - "3002:3002"
+    command: node dist/src/harness.js --start-docker
+    cpus: 2.0
+    mem_limit: 4G
+    memswap_limit: 4G
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      - firecrawl-internal
+      - octopus-prime
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+
+  firecrawl-playwright:
+    image: ghcr.io/firecrawl/playwright-service:latest
+    container_name: firecrawl-playwright
+    environment:
+      PORT: "3000"
+      BLOCK_MEDIA: "true"
+      MAX_CONCURRENT_PAGES: "4"
+    cpus: 1.0
+    mem_limit: 2G
+    memswap_limit: 2G
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    networks:
+      - firecrawl-internal
+    restart: unless-stopped
+    tmpfs:
+      - /tmp/.cache:noexec,nosuid,size=512m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+
+  firecrawl-redis:
+    image: redis:alpine
+    container_name: firecrawl-redis
+    command: redis-server --bind 0.0.0.0
+    networks:
+      - firecrawl-internal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+        compress: "true"
+
+  firecrawl-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: firecrawl-rabbitmq
+    command: rabbitmq-server
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - firecrawl-internal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+        compress: "true"
+
+  firecrawl-postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    container_name: firecrawl-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - firecrawl-pgdata:/var/lib/postgresql/data
+    networks:
+      - firecrawl-internal
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+        compress: "true"
+
+volumes:
+  firecrawl-pgdata:
+
+networks:
+  firecrawl-internal:
+    driver: bridge
+  octopus-prime:
+    external: true
+    name: prime_octopus-prime
