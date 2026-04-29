@@ -32,7 +32,9 @@ echo "=== Deploying Firecrawl to AXON-01 ==="
 
 # 1. Copy Docker stack files
 echo "[1/4] Copying Docker stack files..."
-ssh "$REMOTE" "sudo mkdir -p $REMOTE_DIR"
+# `sudo mkdir -p` alone leaves the dir root-owned, which makes the next scp fail
+# for the non-root SSH user. chown to the deploy user so scp can write.
+ssh "$REMOTE" "sudo mkdir -p $REMOTE_DIR && sudo chown -R \$(id -un):\$(id -gn) $REMOTE_DIR"
 scp "$PKG_DIR/docker/docker-compose.yml" "$REMOTE:$REMOTE_DIR/"
 scp "$PKG_DIR/docker/Dockerfile.postgres" "$REMOTE:$REMOTE_DIR/"
 scp "$PKG_DIR/docker/nuq.sql"            "$REMOTE:$REMOTE_DIR/"
